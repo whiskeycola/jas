@@ -1,12 +1,13 @@
 use crate::Atom;
 
 use super::{find::FindEx as _, rfind::RFindEx as _, DefaultEx as _};
+
 #[derive(Default)]
 pub struct FindIter<'a> {
-    pub(crate) atom_next: Option<Atom<'a>>,
-    pub(crate) atom_back: Option<Atom<'a>>,
-    pub(crate) value_type: crate::Type,
-    pub(crate) needle: String,
+    atom_next: Option<Atom<'a>>,
+    atom_back: Option<Atom<'a>>,
+    value_type: crate::Type,
+    needle: String,
 }
 
 impl<'a> Iterator for FindIter<'a> {
