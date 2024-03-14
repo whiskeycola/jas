@@ -1,4 +1,4 @@
-use std::borrow::Cow;
+use std::{borrow::Cow, collections::HashMap};
 
 use crate::{
     error::Result,
@@ -120,34 +120,33 @@ impl<'a> ObjectIterEx<'a> for Option<Atom<'a>> {
     }
 }
 #[test]
-fn test_children_iter() {
+fn test_object_iter() {
     let data = br#"{
         "hello1": "world 1",
         "hello2": "world 2",
         "hello3": "world 3",
     }"#;
-    let atom = Atom::from(&data);
-    let mut iter = atom.object_iter();
-
-    fn map_item(i: (Cow<'_, str>, &[u8])) -> (String, String) {
-        let (key, body) = i;
-
-        let body = String::from_utf8_lossy(body);
-        (key.to_string(), body.to_string())
+    fn map_item((key, body): (Cow<'_, str>, &[u8])) -> (String, String) {
+        (key.to_string(), String::from_utf8_lossy(body).to_string())
     }
-    assert_eq!(
-        iter.next().map(map_item),
-        Some(("hello1".to_string(), "\"world 1\"".to_string()))
-    );
+    let map = Atom::from(&data)
+        .object_iter()
+        .map(map_item)
+        .collect::<HashMap<_, _>>();
 
-    assert_eq!(
-        iter.next().map(map_item),
-        Some(("hello2".to_string(), "\"world 2\"".to_string()))
-    );
-    assert_eq!(
-        iter.next().map(map_item),
-        Some(("hello3".to_string(), "\"world 3\"".to_string()))
-    );
+    assert_eq!(map.get("hello1"), Some("\"world 1\"".to_string()).as_ref());
+    assert_eq!(map.get("hello 2"), Some("\"world 2\"".to_string()).as_ref());
+    assert_eq!(map.get("hello 3"), Some("\"world 3\"".to_string()).as_ref());
+    assert_eq!(map.len(), 3);
+}
 
-    assert_eq!(iter.next().map(map_item), None);
+#[test]
+fn test_other_type() {
+    let data = br#"[
+        "hello 1",
+        "hello 2"
+    ]"#;
+    let atom = Atom::from(data);
+    let mut iter = atom.object_iter();
+    assert_eq!(iter.next(), None);
 }
