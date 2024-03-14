@@ -2,11 +2,11 @@ use std::usize;
 
 use crate::{
     error::{Error, Result},
-    Type, ANY, ARRAY, BOOLEAN, NULL, NUMBER, OBJECT, STRING,
+    ValueType, ANY, ARRAY, BOOLEAN, NULL, NUMBER, OBJECT, STRING,
 };
 
 /// check value type with first char
-pub fn is_type(c: u8, t: Type) -> bool {
+pub fn is_type(c: u8, t: ValueType) -> bool {
     match () {
         _ if t & STRING != 0 && c == b'"' => true,
         _ if t & OBJECT != 0 && c == b'{' => true,
@@ -20,7 +20,7 @@ pub fn is_type(c: u8, t: Type) -> bool {
 }
 
 /// detect value type from first char
-pub fn get_type(c: u8) -> Result<Type> {
+pub fn get_type(c: u8) -> Result<ValueType> {
     match () {
         _ if is_type(c, STRING) => Ok(STRING),
         _ if is_type(c, OBJECT) => Ok(OBJECT),

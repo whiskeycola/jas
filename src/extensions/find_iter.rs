@@ -6,14 +6,14 @@ use crate::Atom;
 pub struct FindIter<'a> {
     atom_next: Option<Atom<'a>>,
     atom_back: Option<Atom<'a>>,
-    value_type: crate::Type,
+    value_type: crate::ValueType,
     needle: String,
 }
 impl<'a> FindIter<'a> {
     pub fn new(
         atom: impl Into<Option<Atom<'a>>>,
         needle: impl Into<String>,
-        value_type: crate::Type,
+        value_type: crate::ValueType,
     ) -> Self {
         let atom_next = atom.into();
         let atom_back = atom_next.end();
@@ -58,14 +58,14 @@ pub trait FindIterEx<'a> {
     fn find_iter(
         &self,
         needle: impl AsRef<str>,
-        value_type: crate::Type,
+        value_type: crate::ValueType,
     ) -> impl Iterator<Item = Atom<'a>>;
 }
 impl<'a> FindIterEx<'a> for Atom<'a> {
     fn find_iter(
         &self,
         needle: impl AsRef<str>,
-        value_type: crate::Type,
+        value_type: crate::ValueType,
     ) -> impl Iterator<Item = Atom<'a>> {
         FindIter::new(self.clone(), needle.as_ref(), value_type)
     }
@@ -74,7 +74,7 @@ impl<'a> FindIterEx<'a> for Result<Atom<'a>> {
     fn find_iter(
         &self,
         needle: impl AsRef<str>,
-        value_type: crate::Type,
+        value_type: crate::ValueType,
     ) -> impl Iterator<Item = Atom<'a>> {
         FindIter::new(self.clone().ok(), needle.as_ref(), value_type)
     }
@@ -83,7 +83,7 @@ impl<'a> FindIterEx<'a> for Option<Atom<'a>> {
     fn find_iter(
         &self,
         needle: impl AsRef<str>,
-        value_type: crate::Type,
+        value_type: crate::ValueType,
     ) -> impl Iterator<Item = Atom<'a>> {
         FindIter::new(self.clone(), needle.as_ref(), value_type)
     }

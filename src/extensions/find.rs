@@ -5,10 +5,10 @@ use crate::{
 };
 
 pub trait FindEx<'a> {
-    fn find(&self, name: impl AsRef<str>, tp: crate::Type) -> Option<Atom<'a>>;
+    fn find(&self, name: impl AsRef<str>, tp: crate::ValueType) -> Option<Atom<'a>>;
 }
 impl<'a> FindEx<'a> for Atom<'a> {
-    fn find(&self, name: impl AsRef<str>, tp: crate::Type) -> Option<Atom<'a>> {
+    fn find(&self, name: impl AsRef<str>, tp: crate::ValueType) -> Option<Atom<'a>> {
         let sep = format!("\"{}\"", name.as_ref());
 
         let mut start = self.pointer + 1;
@@ -50,13 +50,13 @@ impl<'a> FindEx<'a> for Atom<'a> {
 }
 
 impl<'a> FindEx<'a> for Result<Atom<'a>> {
-    fn find(&self, name: impl AsRef<str>, tp: crate::Type) -> Option<Atom<'a>> {
+    fn find(&self, name: impl AsRef<str>, tp: crate::ValueType) -> Option<Atom<'a>> {
         self.as_ref().ok()?.find(name, tp)
     }
 }
 
 impl<'a> FindEx<'a> for Option<Atom<'a>> {
-    fn find(&self, name: impl AsRef<str>, tp: crate::Type) -> Option<Atom<'a>> {
+    fn find(&self, name: impl AsRef<str>, tp: crate::ValueType) -> Option<Atom<'a>> {
         self.as_ref()?.find(name, tp)
     }
 }

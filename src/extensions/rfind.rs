@@ -5,10 +5,10 @@ use crate::{
 };
 
 pub trait RFindEx<'a> {
-    fn rfind(&self, name: impl AsRef<str>, tp: crate::Type) -> Option<Atom<'a>>;
+    fn rfind(&self, name: impl AsRef<str>, tp: crate::ValueType) -> Option<Atom<'a>>;
 }
 impl<'a> RFindEx<'a> for Atom<'a> {
-    fn rfind(&self, name: impl AsRef<str>, tp: crate::Type) -> Option<Atom<'a>> {
+    fn rfind(&self, name: impl AsRef<str>, tp: crate::ValueType) -> Option<Atom<'a>> {
         let sep = format!("\"{}\"", name.as_ref());
 
         let mut end = self.pointer;
@@ -47,12 +47,12 @@ impl<'a> RFindEx<'a> for Atom<'a> {
     }
 }
 impl<'a> RFindEx<'a> for Result<Atom<'a>> {
-    fn rfind(&self, name: impl AsRef<str>, tp: crate::Type) -> Option<Atom<'a>> {
+    fn rfind(&self, name: impl AsRef<str>, tp: crate::ValueType) -> Option<Atom<'a>> {
         self.as_ref().ok()?.rfind(name, tp)
     }
 }
 impl<'a> RFindEx<'a> for Option<Atom<'a>> {
-    fn rfind(&self, name: impl AsRef<str>, tp: crate::Type) -> Option<Atom<'a>> {
+    fn rfind(&self, name: impl AsRef<str>, tp: crate::ValueType) -> Option<Atom<'a>> {
         self.as_ref()?.rfind(name, tp)
     }
 }
