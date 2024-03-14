@@ -1,5 +1,7 @@
 pub mod deserialize;
 pub mod find;
+pub mod rfind;
+
 pub use crate::error::{Error, Result};
 use crate::{util::pass_all, Atom};
 
