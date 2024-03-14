@@ -1,4 +1,6 @@
 pub mod atom;
+pub mod error;
+pub mod util;
 pub use atom::Atom;
 
 pub type Type = u32;
