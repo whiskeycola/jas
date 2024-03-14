@@ -1,7 +1,7 @@
-pub mod children_iter;
 pub mod deserialize;
 pub mod find;
 pub mod find_iter;
+pub mod object_iter;
 pub mod parent;
 pub mod rfind;
 

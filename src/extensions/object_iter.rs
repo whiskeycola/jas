@@ -8,12 +8,12 @@ use crate::{
 
 use super::DefaultEx as _;
 type IterItem<'a> = (Cow<'a, str>, &'a [u8]);
-pub struct ChildrenIter<'a> {
+pub struct ObjectIter<'a> {
     atom: Option<Atom<'a>>,
     cursor: usize,
 }
 
-impl<'a> Iterator for ChildrenIter<'a> {
+impl<'a> Iterator for ObjectIter<'a> {
     type Item = IterItem<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -93,31 +93,31 @@ impl<'a> Iterator for ChildrenIter<'a> {
     }
 }
 
-pub trait ChildrenIterEx<'a> {
-    fn children_iter(&self) -> impl Iterator<Item = IterItem<'a>>;
+pub trait ObjectIterEx<'a> {
+    fn object_iter(&self) -> impl Iterator<Item = IterItem<'a>>;
 }
-impl<'a> ChildrenIterEx<'a> for Atom<'a> {
-    fn children_iter(&self) -> impl Iterator<Item = (Cow<'a, str>, &'a [u8])> {
-        ChildrenIter {
+impl<'a> ObjectIterEx<'a> for Atom<'a> {
+    fn object_iter(&self) -> impl Iterator<Item = (Cow<'a, str>, &'a [u8])> {
+        ObjectIter {
             atom: Some(self.clone()),
             cursor: self.current + 1,
         }
     }
 }
-impl<'a> ChildrenIterEx<'a> for Result<Atom<'a>> {
-    fn children_iter(&self) -> impl Iterator<Item = IterItem<'a>> {
+impl<'a> ObjectIterEx<'a> for Result<Atom<'a>> {
+    fn object_iter(&self) -> impl Iterator<Item = IterItem<'a>> {
         let atom = self.clone().ok();
         let cursor = atom.as_ref().map(|c| c.current + 1).unwrap_or(0);
-        let children_iter = ChildrenIter { atom, cursor };
+        let children_iter = ObjectIter { atom, cursor };
         children_iter
     }
 }
 
-impl<'a> ChildrenIterEx<'a> for Option<Atom<'a>> {
-    fn children_iter(&self) -> impl Iterator<Item = IterItem<'a>> {
+impl<'a> ObjectIterEx<'a> for Option<Atom<'a>> {
+    fn object_iter(&self) -> impl Iterator<Item = IterItem<'a>> {
         let atom = self.clone();
         let cursor = atom.as_ref().map(|c| c.current + 1).unwrap_or(0);
-        let children_iter = ChildrenIter { atom, cursor };
+        let children_iter = ObjectIter { atom, cursor };
         children_iter
     }
 }
@@ -129,7 +129,7 @@ fn test_children_iter() {
         "hello3": "world 3",
     }"#;
     let atom = Atom::from(&data);
-    let mut iter = atom.children_iter();
+    let mut iter = atom.object_iter();
 
     fn map_item(i: (Cow<'_, str>, &[u8])) -> (String, String) {
         let (key, body) = i;
