@@ -12,7 +12,14 @@ pub struct ObjectIter<'a> {
     atom: Option<Atom<'a>>,
     cursor: usize,
 }
-
+impl<'a> ObjectIter<'a> {
+    pub fn new(atom: impl Into<Option<Atom<'a>>>) -> Self {
+        let atom = atom.into();
+        let cursor = atom.as_ref().map(|c| c.current + 1).unwrap_or(0);
+        let children_iter = ObjectIter { atom, cursor };
+        children_iter
+    }
+}
 impl<'a> Iterator for ObjectIter<'a> {
     type Item = IterItem<'a>;
 
@@ -96,27 +103,18 @@ pub trait ObjectIterEx<'a> {
 }
 impl<'a> ObjectIterEx<'a> for Atom<'a> {
     fn object_iter(&self) -> impl Iterator<Item = (Cow<'a, str>, &'a [u8])> {
-        ObjectIter {
-            atom: Some(self.clone()),
-            cursor: self.current + 1,
-        }
+        ObjectIter::new(self.clone())
     }
 }
 impl<'a> ObjectIterEx<'a> for Result<Atom<'a>> {
     fn object_iter(&self) -> impl Iterator<Item = IterItem<'a>> {
-        let atom = self.clone().ok();
-        let cursor = atom.as_ref().map(|c| c.current + 1).unwrap_or(0);
-        let children_iter = ObjectIter { atom, cursor };
-        children_iter
+        ObjectIter::new(self.clone().ok())
     }
 }
 
 impl<'a> ObjectIterEx<'a> for Option<Atom<'a>> {
     fn object_iter(&self) -> impl Iterator<Item = IterItem<'a>> {
-        let atom = self.clone();
-        let cursor = atom.as_ref().map(|c| c.current + 1).unwrap_or(0);
-        let children_iter = ObjectIter { atom, cursor };
-        children_iter
+        ObjectIter::new(self.clone())
     }
 }
 #[test]
@@ -135,8 +133,8 @@ fn test_object_iter() {
         .collect::<std::collections::HashMap<_, _>>();
 
     assert_eq!(map.get("hello1"), Some("\"world 1\"".to_string()).as_ref());
-    assert_eq!(map.get("hello 2"), Some("\"world 2\"".to_string()).as_ref());
-    assert_eq!(map.get("hello 3"), Some("\"world 3\"".to_string()).as_ref());
+    assert_eq!(map.get("hello2"), Some("\"world 2\"".to_string()).as_ref());
+    assert_eq!(map.get("hello3"), Some("\"world 3\"".to_string()).as_ref());
     assert_eq!(map.len(), 3);
 }
 
