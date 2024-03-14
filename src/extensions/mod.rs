@@ -5,6 +5,7 @@ pub mod find_iter;
 pub mod object_iter;
 pub mod parent;
 pub mod rfind;
+pub mod strict_iter;
 pub use crate::error::{Error, Result};
 use crate::{util::pass_all, Atom};
 
