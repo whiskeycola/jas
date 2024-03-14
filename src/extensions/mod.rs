@@ -1,3 +1,4 @@
+pub mod children_iter;
 pub mod deserialize;
 pub mod find;
 pub mod parent;

@@ -105,7 +105,7 @@ pub fn pass_number(data: &[u8]) -> Result<usize> {
 #[test]
 fn test_pass_number() {
     let data = br#"{"number":-1.0E+2}"#;
-    assert_eq!(pass_number(&data[10..]), 7);
+    assert_eq!(pass_number(&data[10..]), Ok(7));
 }
 
 pub fn pass_object(data: &[u8]) -> Result<usize> {
