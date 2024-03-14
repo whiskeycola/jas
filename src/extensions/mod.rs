@@ -1,10 +1,10 @@
+pub mod array_iter;
 pub mod deserialize;
 pub mod find;
 pub mod find_iter;
 pub mod object_iter;
 pub mod parent;
 pub mod rfind;
-
 pub use crate::error::{Error, Result};
 use crate::{util::pass_all, Atom};
 
