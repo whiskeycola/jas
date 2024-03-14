@@ -1,4 +1,4 @@
-use std::{borrow::Cow, collections::HashMap};
+use std::borrow::Cow;
 
 use crate::{
     error::Result,
@@ -132,7 +132,7 @@ fn test_object_iter() {
     let map = Atom::from(&data)
         .object_iter()
         .map(map_item)
-        .collect::<HashMap<_, _>>();
+        .collect::<std::collections::HashMap<_, _>>();
 
     assert_eq!(map.get("hello1"), Some("\"world 1\"".to_string()).as_ref());
     assert_eq!(map.get("hello 2"), Some("\"world 2\"".to_string()).as_ref());
