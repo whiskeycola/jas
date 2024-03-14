@@ -24,7 +24,7 @@ impl<'a> Iterator for ObjectIter<'a> {
             *i += pass_space(&atom.data[*i..]);
             if *i >= atom.data.len() {
                 // error!("unexpected end data");
-                return None;
+                break;
             }
 
             // if close tag
@@ -33,47 +33,48 @@ impl<'a> Iterator for ObjectIter<'a> {
             }
             if !is_type(atom.data[*i], STRING) {
                 // error!("expected key(string) found {}", self.data[i] as char);
-                return None;
+                break;
             }
 
             let Ok(name) = pass_string(&atom.data[*i..]).map(|end| &atom.data[*i..*i + end]) else {
                 // error!("bad syntax");
-                return None;
+                break;
             };
 
             if name.len() <= 2 {
                 // error!("bad json syntax empty object key")
-                return None;
+                break;
             }
 
             *i += name.len();
             if *i >= atom.data.len() {
                 // error!("unexpected end data");
+                break;
             }
 
             *i += match pass_to_item(&atom.data[*i..]) {
                 Ok(i) => i,
                 Err(_) => {
                     // error!("bad json syntax expected \":\"");
-                    return None;
+                    break;
                 }
             };
             if *i >= atom.data.len() {
                 // error!("unexpected end data");
-                return None;
+                break;
             }
             let obj = match Atom::new(&atom.data[*i..]).as_bytes() {
                 Ok(o) => o,
                 Err(_e) => {
                     // error!("parse as_bytes(): {_e}")
-                    return None;
+                    break;
                 }
             };
 
             *i += obj.len();
             if *i >= atom.data.len() {
                 // error!("unexpected end data");
-                return None;
+                break;
             }
 
             let key = String::from_utf8_lossy(&name[1..name.len() - 1]);
@@ -81,10 +82,7 @@ impl<'a> Iterator for ObjectIter<'a> {
             //
             *i += pass_space(&atom.data[*i..]);
 
-            if *i >= atom.data.len() {
-                // error!("unexpected end data");
-                // return None;
-            } else if atom.data[*i] == b',' {
+            if *i < atom.data.len() && atom.data[*i] == b',' {
                 *i += 1;
             }
             return Some((key, obj));
