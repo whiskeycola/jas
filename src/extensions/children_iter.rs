@@ -1,6 +1,7 @@
 use std::borrow::Cow;
 
 use crate::{
+    error::Result,
     util::{is_type, pass_space, pass_string, pass_to_item},
     Atom, STRING,
 };
@@ -103,7 +104,23 @@ impl<'a> ChildrenIterEx for Atom<'a> {
         }
     }
 }
+impl<'a> ChildrenIterEx for Result<Atom<'a>> {
+    fn children_iter(&self) -> impl Iterator<Item = IterItem> {
+        let atom = self.clone().ok();
+        let cursor = atom.as_ref().map(|c| c.current + 1).unwrap_or(0);
+        let children_iter = ChildrenIter { atom, cursor };
+        children_iter
+    }
+}
 
+impl<'a> ChildrenIterEx for Option<Atom<'a>> {
+    fn children_iter(&self) -> impl Iterator<Item = IterItem> {
+        let atom = self.clone();
+        let cursor = atom.as_ref().map(|c| c.current + 1).unwrap_or(0);
+        let children_iter = ChildrenIter { atom, cursor };
+        children_iter
+    }
+}
 #[test]
 fn test_children_iter() {
     let data = br#"{
