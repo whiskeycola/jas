@@ -1,5 +1,6 @@
 pub mod deserialize;
 pub mod find;
+pub mod parent;
 pub mod rfind;
 
 pub use crate::error::{Error, Result};
