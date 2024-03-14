@@ -93,19 +93,19 @@ impl<'a> Iterator for ChildrenIter<'a> {
     }
 }
 
-pub trait ChildrenIterEx {
-    fn children_iter(&self) -> impl Iterator<Item = IterItem>;
+pub trait ChildrenIterEx<'a> {
+    fn children_iter(&self) -> impl Iterator<Item = IterItem<'a>>;
 }
-impl<'a> ChildrenIterEx for Atom<'a> {
-    fn children_iter(&self) -> impl Iterator<Item = (Cow<'_, str>, &[u8])> {
+impl<'a> ChildrenIterEx<'a> for Atom<'a> {
+    fn children_iter(&self) -> impl Iterator<Item = (Cow<'a, str>, &'a [u8])> {
         ChildrenIter {
             atom: Some(self.clone()),
             cursor: self.current + 1,
         }
     }
 }
-impl<'a> ChildrenIterEx for Result<Atom<'a>> {
-    fn children_iter(&self) -> impl Iterator<Item = IterItem> {
+impl<'a> ChildrenIterEx<'a> for Result<Atom<'a>> {
+    fn children_iter(&self) -> impl Iterator<Item = IterItem<'a>> {
         let atom = self.clone().ok();
         let cursor = atom.as_ref().map(|c| c.current + 1).unwrap_or(0);
         let children_iter = ChildrenIter { atom, cursor };
@@ -113,8 +113,8 @@ impl<'a> ChildrenIterEx for Result<Atom<'a>> {
     }
 }
 
-impl<'a> ChildrenIterEx for Option<Atom<'a>> {
-    fn children_iter(&self) -> impl Iterator<Item = IterItem> {
+impl<'a> ChildrenIterEx<'a> for Option<Atom<'a>> {
+    fn children_iter(&self) -> impl Iterator<Item = IterItem<'a>> {
         let atom = self.clone();
         let cursor = atom.as_ref().map(|c| c.current + 1).unwrap_or(0);
         let children_iter = ChildrenIter { atom, cursor };
