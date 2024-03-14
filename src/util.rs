@@ -85,16 +85,21 @@ fn test_pass_string() {
     assert_eq!(pass_string(&data[9..]), Ok(7));
 }
 
-pub fn pass_number(data: &[u8]) -> usize {
+pub fn pass_number(data: &[u8]) -> Result<usize> {
     let mut i = 0;
     while i < data.len() {
         match data[i] {
             b'-' | b'+' | b'e' | b'E' | b'.' | b'0'..=b'9' => {}
-            _ => break,
+            _ => {
+                if i == 0 {
+                    return Err(Error::ExpectOtherValueType);
+                }
+                break;
+            }
         }
         i += 1;
     }
-    i
+    Ok(i)
 }
 
 #[test]
@@ -177,5 +182,16 @@ pub fn pass_null(data: &[u8]) -> Result<usize> {
             b'n' => Ok(4),
             _ => Err(Error::ExpectOtherValueType),
         }
+    }
+}
+
+pub fn pass_all(data: &[u8]) -> Result<usize> {
+    match get_type(data[0])? {
+        STRING => pass_string(data),
+        OBJECT | ARRAY => pass_object(data),
+        NUMBER => pass_number(data),
+        BOOLEAN => pass_bool(data),
+        NULL => pass_null(data),
+        _ => Err(Error::UndefinedType(data[0] as char)),
     }
 }

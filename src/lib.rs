@@ -1,5 +1,6 @@
 pub mod atom;
 pub mod error;
+pub mod extensions;
 pub mod util;
 pub use atom::Atom;
 
