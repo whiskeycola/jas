@@ -18,7 +18,10 @@ pub trait DefaultEx<'a> {
 
 impl<'a> DefaultEx<'a> for Atom<'a> {
     fn as_bytes(&self) -> Result<&'a [u8]> {
-        let end = pass_all(&self.data[self.current..])?;
+        if self.current >= self.data.len() {
+            return Err(Error::UnexpectedEOF);
+        }
+        let end = self.current + pass_all(&self.data[self.current..])?;
         Ok(&self.data[self.current..end])
     }
 
@@ -87,4 +90,20 @@ impl<'a> DefaultEx<'a> for Option<Atom<'a>> {
     fn enter(&self) -> Result<Atom<'a>> {
         self.as_ref().ok_or(Error::None)?.enter()
     }
+}
+
+#[test]
+fn test_as_bytes() {
+    let data = br#"{"a":"result a","b":"result b"}"#;
+    let r = Atom::from(data)
+        .as_bytes()
+        .map(Atom::from)
+        // shift cursor to "result a"
+        .map(|mut a| {
+            a.current = 5;
+            a
+        })
+        .as_bytes();
+    let needle = br#""result a""#;
+    assert_eq!(Ok(&needle[..]), r);
 }
