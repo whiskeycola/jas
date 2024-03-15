@@ -17,7 +17,7 @@ impl<'a> Atom<'a> {
 
 impl<'a, T> From<&'a T> for Atom<'a>
 where
-    T: AsRef<[u8]>,
+    T: AsRef<[u8]> + ?Sized,
 {
     fn from(value: &'a T) -> Self {
         let data = value.as_ref();
