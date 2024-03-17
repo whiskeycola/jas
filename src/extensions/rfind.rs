@@ -1,15 +1,17 @@
 use crate::{
     error::Result,
+    needle::Needle,
     util::{is_type, pass_to_item},
     Atom,
 };
 
 pub trait RFindEx<'a> {
-    fn rfind(&self, name: impl AsRef<str>, tp: crate::ValueType) -> Option<Atom<'a>>;
+    fn rfind<'n>(&self, needle: impl Into<Needle<'n>>) -> Option<Atom<'a>>;
 }
 impl<'a> RFindEx<'a> for Atom<'a> {
-    fn rfind(&self, name: impl AsRef<str>, tp: crate::ValueType) -> Option<Atom<'a>> {
-        let sep = format!("\"{}\"", name.as_ref());
+    fn rfind<'n>(&self, needle: impl Into<Needle<'n>>) -> Option<Atom<'a>> {
+        let needle = needle.into();
+        let sep = format!("\"{}\"", needle.key);
 
         let mut end = self.pointer;
 
@@ -34,7 +36,7 @@ impl<'a> RFindEx<'a> for Atom<'a> {
                 continue;
             }
 
-            if tp == crate::ANY || is_type(self.data[current], tp) {
+            if needle.value_type == crate::ANY || is_type(self.data[current], needle.value_type) {
                 return Some(Self {
                     data: &self.data[..],
                     pointer,
@@ -47,12 +49,12 @@ impl<'a> RFindEx<'a> for Atom<'a> {
     }
 }
 impl<'a> RFindEx<'a> for Result<Atom<'a>> {
-    fn rfind(&self, name: impl AsRef<str>, tp: crate::ValueType) -> Option<Atom<'a>> {
-        self.as_ref().ok()?.rfind(name, tp)
+    fn rfind<'n>(&self, needle: impl Into<Needle<'n>>) -> Option<Atom<'a>> {
+        self.as_ref().ok()?.rfind(needle)
     }
 }
 impl<'a> RFindEx<'a> for Option<Atom<'a>> {
-    fn rfind(&self, name: impl AsRef<str>, tp: crate::ValueType) -> Option<Atom<'a>> {
-        self.as_ref()?.rfind(name, tp)
+    fn rfind<'n>(&self, needle: impl Into<Needle<'n>>) -> Option<Atom<'a>> {
+        self.as_ref()?.rfind(needle)
     }
 }

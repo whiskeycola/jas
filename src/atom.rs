@@ -1,4 +1,4 @@
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Copy)]
 pub struct Atom<'a> {
     pub data: &'a [u8],
     pub pointer: usize,
@@ -6,7 +6,13 @@ pub struct Atom<'a> {
 }
 
 impl<'a> Atom<'a> {
-    pub fn new(data: &'a [u8]) -> Atom<'a> {
+    pub fn new<T>(data: &'a T) -> Self
+    where
+        T: AsRef<[u8]> + ?Sized,
+    {
+        Self::from_slice(data.as_ref())
+    }
+    pub fn from_slice(data: &'a [u8]) -> Atom<'a> {
         Atom {
             data,
             pointer: 0,
@@ -20,7 +26,6 @@ where
     T: AsRef<[u8]> + ?Sized,
 {
     fn from(value: &'a T) -> Self {
-        let data = value.as_ref();
-        Self::new(data)
+        Self::new(value)
     }
 }
