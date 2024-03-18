@@ -5,6 +5,17 @@ pub struct Needle<'n> {
     pub key: &'n str,
     pub value_type: crate::ValueType,
 }
+impl<'n> Needle<'n> {
+    pub fn new<T>(key: &'n T, value_type: crate::ValueType) -> Self
+    where
+        T: AsRef<str> + ?Sized,
+    {
+        Self {
+            key: key.as_ref(),
+            value_type,
+        }
+    }
+}
 
 impl<'n, T> From<&'n T> for Needle<'n>
 where
