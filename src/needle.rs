@@ -1,19 +1,13 @@
 use crate::{ANY, ARRAY, BOOLEAN, NULL, NUMBER, OBJECT, STRING};
 
 #[derive(Debug, Clone, Copy)]
-pub struct Needle<'n> {
-    pub key: &'n str,
-    pub value_type: crate::ValueType,
-}
+pub struct Needle<'n>(pub &'n str, pub crate::ValueType);
 impl<'n> Needle<'n> {
-    pub fn new<T>(key: &'n T, value_type: crate::ValueType) -> Self
-    where
-        T: AsRef<str> + ?Sized,
-    {
-        Self {
-            key: key.as_ref(),
-            value_type,
-        }
+    pub fn key(&self) -> &'n str {
+        self.0
+    }
+    pub fn value_type(&self) -> crate::ValueType {
+        self.1
     }
 }
 
@@ -22,10 +16,7 @@ where
     T: AsRef<str> + ?Sized,
 {
     fn from(value: &'n T) -> Self {
-        Self {
-            key: value.as_ref(),
-            value_type: ANY,
-        }
+        Self(value.as_ref(), ANY)
     }
 }
 
@@ -33,10 +24,7 @@ where
 pub struct NeedAny<'n>(pub &'n str);
 impl<'n> Into<Needle<'n>> for NeedAny<'n> {
     fn into(self) -> Needle<'n> {
-        Needle {
-            key: self.0,
-            value_type: ANY,
-        }
+        Needle(self.0, ANY)
     }
 }
 
@@ -44,10 +32,7 @@ impl<'n> Into<Needle<'n>> for NeedAny<'n> {
 pub struct NeedString<'n>(pub &'n str);
 impl<'n> Into<Needle<'n>> for NeedString<'n> {
     fn into(self) -> Needle<'n> {
-        Needle {
-            key: self.0,
-            value_type: STRING,
-        }
+        Needle(self.0, STRING)
     }
 }
 
@@ -55,10 +40,7 @@ impl<'n> Into<Needle<'n>> for NeedString<'n> {
 pub struct NeedArray<'n>(pub &'n str);
 impl<'n> Into<Needle<'n>> for NeedArray<'n> {
     fn into(self) -> Needle<'n> {
-        Needle {
-            key: self.0,
-            value_type: ARRAY,
-        }
+        Needle(self.0, ARRAY)
     }
 }
 
@@ -66,10 +48,7 @@ impl<'n> Into<Needle<'n>> for NeedArray<'n> {
 pub struct NeedObject<'n>(pub &'n str);
 impl<'n> Into<Needle<'n>> for NeedObject<'n> {
     fn into(self) -> Needle<'n> {
-        Needle {
-            key: self.0,
-            value_type: OBJECT,
-        }
+        Needle(self.0, OBJECT)
     }
 }
 
@@ -77,10 +56,7 @@ impl<'n> Into<Needle<'n>> for NeedObject<'n> {
 pub struct NeedBoolean<'n>(pub &'n str);
 impl<'n> Into<Needle<'n>> for NeedBoolean<'n> {
     fn into(self) -> Needle<'n> {
-        Needle {
-            key: self.0,
-            value_type: BOOLEAN,
-        }
+        Needle(self.0, BOOLEAN)
     }
 }
 
@@ -88,10 +64,7 @@ impl<'n> Into<Needle<'n>> for NeedBoolean<'n> {
 pub struct NeedNumber<'n>(pub &'n str);
 impl<'n> Into<Needle<'n>> for NeedNumber<'n> {
     fn into(self) -> Needle<'n> {
-        Needle {
-            key: self.0,
-            value_type: NUMBER,
-        }
+        Needle(self.0, NUMBER)
     }
 }
 
@@ -99,9 +72,6 @@ impl<'n> Into<Needle<'n>> for NeedNumber<'n> {
 pub struct NeedNull<'n>(pub &'n str);
 impl<'n> Into<Needle<'n>> for NeedNull<'n> {
     fn into(self) -> Needle<'n> {
-        Needle {
-            key: self.0,
-            value_type: NULL,
-        }
+        Needle(self.0, NULL)
     }
 }

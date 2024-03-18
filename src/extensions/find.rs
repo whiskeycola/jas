@@ -11,7 +11,7 @@ pub trait FindEx<'a> {
 impl<'a> FindEx<'a> for Atom<'a> {
     fn find<'n>(&self, needle: impl Into<Needle<'n>>) -> Option<Atom<'a>> {
         let needle = needle.into();
-        let sep = format!("\"{}\"", needle.key);
+        let sep = format!("\"{}\"", needle.key());
 
         let mut start = self.pointer + 1;
 
@@ -38,7 +38,8 @@ impl<'a> FindEx<'a> for Atom<'a> {
                 break; // NOT FOUND
             }
 
-            if needle.value_type == crate::ANY || is_type(self.data[current], needle.value_type) {
+            if needle.value_type() == crate::ANY || is_type(self.data[current], needle.value_type())
+            {
                 return Some(Self {
                     data: &self.data[..],
                     pointer,
