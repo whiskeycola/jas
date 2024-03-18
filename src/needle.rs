@@ -3,6 +3,12 @@ use crate::{ANY, ARRAY, BOOLEAN, NULL, NUMBER, OBJECT, STRING};
 #[derive(Debug, Clone, Copy)]
 pub struct Needle<'n>(pub &'n str, pub crate::ValueType);
 impl<'n> Needle<'n> {
+    pub fn new<T>(key: &'n T, value_type: crate::ValueType) -> Self
+    where
+        T: AsRef<str> + ?Sized,
+    {
+        Self(key.as_ref(), value_type)
+    }
     pub fn key(&self) -> &'n str {
         self.0
     }
