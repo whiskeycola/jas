@@ -17,33 +17,33 @@ impl<'a, 'n> StrictIter<'a, 'n> {
 }
 
 impl<'a, 'n> Iterator for StrictIter<'a, 'n> {
-    type Item = &'a [u8];
+    type Item = Atom<'a>;
     fn next(&mut self) -> Option<Self::Item> {
         let mut atom = self.atom.find(self.needle)?;
-        let data = atom.as_bytes().ok()?;
+        let res_atom = atom.value().ok()?;
 
         // shift current value
-        atom.pointer = atom.current + data.len();
+        atom.pointer = atom.current + res_atom.data.len();
         self.atom = Some(atom);
-        Some(data)
+        Some(res_atom)
     }
 }
 pub trait StrictIterEx<'a, 'n> {
-    fn strict_iter(&self, needle: impl Into<Needle<'n>>) -> impl Iterator<Item = &'a [u8]>;
+    fn strict_iter(&self, needle: impl Into<Needle<'n>>) -> impl Iterator<Item = Atom<'a>>;
 }
 impl<'a, 'n> StrictIterEx<'a, 'n> for Atom<'a> {
-    fn strict_iter(&self, needle: impl Into<Needle<'n>>) -> impl Iterator<Item = &'a [u8]> {
+    fn strict_iter(&self, needle: impl Into<Needle<'n>>) -> impl Iterator<Item = Atom<'a>> {
         StrictIter::new(self.clone(), needle)
     }
 }
 impl<'a, 'n> StrictIterEx<'a, 'n> for Result<Atom<'a>> {
-    fn strict_iter(&self, needle: impl Into<Needle<'n>>) -> impl Iterator<Item = &'a [u8]> {
+    fn strict_iter(&self, needle: impl Into<Needle<'n>>) -> impl Iterator<Item = Atom<'a>> {
         StrictIter::new(self.clone().ok(), needle)
     }
 }
 
 impl<'a, 'n> StrictIterEx<'a, 'n> for Option<Atom<'a>> {
-    fn strict_iter(&self, needle: impl Into<Needle<'n>>) -> impl Iterator<Item = &'a [u8]> {
+    fn strict_iter(&self, needle: impl Into<Needle<'n>>) -> impl Iterator<Item = Atom<'a>> {
         StrictIter::new(self.clone(), needle)
     }
 }

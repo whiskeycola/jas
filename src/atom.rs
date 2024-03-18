@@ -4,7 +4,6 @@ pub struct Atom<'a> {
     pub pointer: usize,
     pub current: usize,
 }
-
 impl<'a> Atom<'a> {
     pub fn new<T>(data: &'a T) -> Self
     where
@@ -18,6 +17,9 @@ impl<'a> Atom<'a> {
             pointer: 0,
             current: 0,
         }
+    }
+    pub fn inner(self) -> &'a [u8] {
+        self.data
     }
 }
 

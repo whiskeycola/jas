@@ -1,5 +1,7 @@
 use crate::error::Result;
-use crate::{extensions::DefaultEx as _, util::pass_space, Atom};
+use crate::{util::pass_space, Atom};
+
+use super::DefaultEx;
 
 pub struct ArrayIter<'a> {
     atom: Option<Atom<'a>>,
@@ -14,7 +16,7 @@ impl<'a> ArrayIter<'a> {
     }
 }
 impl<'a> Iterator for ArrayIter<'a> {
-    type Item = &'a [u8];
+    type Item = Atom<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
         let atom = self.atom.as_ref()?;
@@ -31,9 +33,9 @@ impl<'a> Iterator for ArrayIter<'a> {
                 break;
             }
 
-            let obj = Atom::new(&atom.data[*i..]).as_bytes().ok()?;
+            let res_atom = Atom::new(&atom.data[*i..]).value().ok()?;
 
-            *i += obj.len();
+            *i += res_atom.data.len();
             if *i >= atom.data.len() {
                 // error!("unexpected end data");
                 break;
@@ -43,27 +45,27 @@ impl<'a> Iterator for ArrayIter<'a> {
             if *i < atom.data.len() && atom.data[*i] == b',' {
                 *i += 1;
             }
-            return Some(obj);
+            return Some(res_atom);
         }
         None
     }
 }
 
 pub trait ArrayIterEx<'a> {
-    fn array_iter(&self) -> impl Iterator<Item = &'a [u8]>;
+    fn array_iter(&self) -> impl Iterator<Item = Atom<'a>>;
 }
 impl<'a> ArrayIterEx<'a> for Atom<'a> {
-    fn array_iter(&self) -> impl Iterator<Item = &'a [u8]> {
+    fn array_iter(&self) -> impl Iterator<Item = Atom<'a>> {
         ArrayIter::new(self.clone())
     }
 }
 impl<'a> ArrayIterEx<'a> for Result<Atom<'a>> {
-    fn array_iter(&self) -> impl Iterator<Item = &'a [u8]> {
+    fn array_iter(&self) -> impl Iterator<Item = Atom<'a>> {
         ArrayIter::new(self.clone().ok())
     }
 }
 impl<'a> ArrayIterEx<'a> for Option<Atom<'a>> {
-    fn array_iter(&self) -> impl Iterator<Item = &'a [u8]> {
+    fn array_iter(&self) -> impl Iterator<Item = Atom<'a>> {
         ArrayIter::new(self.clone())
     }
 }
@@ -75,7 +77,7 @@ fn test_array_iter() {
     ]"#;
     let arr = Atom::from(data)
         .array_iter()
-        .map(|a| String::from_utf8_lossy(a).to_string())
+        .map(|a| String::from_utf8_lossy(a.inner()).to_string())
         .collect::<Vec<_>>();
     assert_eq!(arr.len(), 2);
     assert_eq!(arr[0], String::from("\"v1\""));

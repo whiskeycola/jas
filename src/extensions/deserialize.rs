@@ -8,8 +8,8 @@ pub trait DeserializeEx<'a> {
 
 impl<'a> DeserializeEx<'a> for Atom<'a> {
     fn deserialize<Z: serde::Deserialize<'a>>(&self) -> Result<Z> {
-        let data = self.as_bytes()?;
-        serde_json::from_slice(data).map_err(|e| Error::Serde(format!("{e}")))
+        let data = self.value()?;
+        serde_json::from_slice(data.inner()).map_err(|e| Error::Serde(format!("{e}")))
     }
 }
 

@@ -10,21 +10,12 @@ pub use crate::error::{Error, Result};
 use crate::{util::pass_all, Atom};
 
 pub trait DefaultEx<'a> {
-    fn as_bytes(&self) -> Result<&'a [u8]>;
     fn start(&self) -> Option<Atom<'a>>;
     fn end(&self) -> Option<Atom<'a>>;
-    fn enter(&self) -> Result<Atom<'a>>;
+    fn value(&self) -> Result<Atom<'a>>;
 }
 
 impl<'a> DefaultEx<'a> for Atom<'a> {
-    fn as_bytes(&self) -> Result<&'a [u8]> {
-        if self.current >= self.data.len() {
-            return Err(Error::UnexpectedEOF);
-        }
-        let end = self.current + pass_all(&self.data[self.current..])?;
-        Ok(&self.data[self.current..end])
-    }
-
     #[inline]
     fn start(&self) -> Option<Atom<'a>> {
         Some(Atom {
@@ -43,17 +34,17 @@ impl<'a> DefaultEx<'a> for Atom<'a> {
         })
     }
 
-    fn enter(&self) -> Result<Atom<'a>> {
-        self.as_bytes().map(Atom::new)
+    fn value(&self) -> Result<Atom<'a>> {
+        if self.current >= self.data.len() {
+            return Err(Error::UnexpectedEOF);
+        }
+        let end = self.current + pass_all(&self.data[self.current..])?;
+        let new_atom_data = &self.data[self.current..end];
+        Ok(Atom::new(new_atom_data))
     }
 }
 
 impl<'a> DefaultEx<'a> for Result<Atom<'a>> {
-    #[inline]
-    fn as_bytes(&self) -> Result<&'a [u8]> {
-        self.as_ref()?.as_bytes()
-    }
-
     #[inline]
     fn start(&self) -> Option<Atom<'a>> {
         self.as_ref().ok()?.start()
@@ -65,17 +56,12 @@ impl<'a> DefaultEx<'a> for Result<Atom<'a>> {
     }
 
     #[inline]
-    fn enter(&self) -> Result<Atom<'a>> {
-        self.as_ref()?.enter()
+    fn value(&self) -> Result<Atom<'a>> {
+        self.as_ref()?.value()
     }
 }
 
 impl<'a> DefaultEx<'a> for Option<Atom<'a>> {
-    #[inline]
-    fn as_bytes(&self) -> Result<&'a [u8]> {
-        self.as_ref().ok_or(Error::None)?.as_bytes()
-    }
-
     #[inline]
     fn start(&self) -> Option<Atom<'a>> {
         self.as_ref()?.start()
@@ -87,8 +73,8 @@ impl<'a> DefaultEx<'a> for Option<Atom<'a>> {
     }
 
     #[inline]
-    fn enter(&self) -> Result<Atom<'a>> {
-        self.as_ref().ok_or(Error::None)?.enter()
+    fn value(&self) -> Result<Atom<'a>> {
+        self.as_ref().ok_or(Error::None)?.value()
     }
 }
 
@@ -96,14 +82,14 @@ impl<'a> DefaultEx<'a> for Option<Atom<'a>> {
 fn test_as_bytes() {
     let data = br#"{"a":"result a","b":"result b"}"#;
     let r = Atom::from(data)
-        .as_bytes()
-        .map(Atom::from)
+        .value()
         // shift cursor to "result a"
         .map(|mut a| {
             a.current = 5;
             a
         })
-        .as_bytes();
+        .value()
+        .map(Aom::inner);
     let needle = br#""result a""#;
     assert_eq!(Ok(&needle[..]), r);
 }

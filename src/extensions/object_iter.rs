@@ -7,7 +7,7 @@ use crate::{
 };
 
 use super::DefaultEx as _;
-type IterItem<'a> = (Cow<'a, str>, &'a [u8]);
+type IterItem<'a> = (Cow<'a, str>, Atom<'a>);
 pub struct ObjectIter<'a> {
     atom: Option<Atom<'a>>,
     cursor: usize,
@@ -70,7 +70,7 @@ impl<'a> Iterator for ObjectIter<'a> {
                 // error!("unexpected end data");
                 break;
             }
-            let obj = match Atom::new(&atom.data[*i..]).as_bytes() {
+            let res_atom = match Atom::new(&atom.data[*i..]).value() {
                 Ok(o) => o,
                 Err(_e) => {
                     // error!("parse as_bytes(): {_e}")
@@ -78,7 +78,7 @@ impl<'a> Iterator for ObjectIter<'a> {
                 }
             };
 
-            *i += obj.len();
+            *i += res_atom.inner().len();
             if *i >= atom.data.len() {
                 // error!("unexpected end data");
                 break;
@@ -92,7 +92,7 @@ impl<'a> Iterator for ObjectIter<'a> {
             if *i < atom.data.len() && atom.data[*i] == b',' {
                 *i += 1;
             }
-            return Some((key, obj));
+            return Some((key, res_atom));
         }
         None
     }
@@ -102,7 +102,7 @@ pub trait ObjectIterEx<'a> {
     fn object_iter(&self) -> impl Iterator<Item = IterItem<'a>>;
 }
 impl<'a> ObjectIterEx<'a> for Atom<'a> {
-    fn object_iter(&self) -> impl Iterator<Item = (Cow<'a, str>, &'a [u8])> {
+    fn object_iter(&self) -> impl Iterator<Item = IterItem<'a>> {
         ObjectIter::new(self.clone())
     }
 }
@@ -124,8 +124,11 @@ fn test_object_iter() {
         "hello2": "world 2",
         "hello3": "world 3",
     }"#;
-    fn map_item((key, body): (Cow<'_, str>, &[u8])) -> (String, String) {
-        (key.to_string(), String::from_utf8_lossy(body).to_string())
+    fn map_item((key, body): (Cow<'_, str>, Atom<'_>)) -> (String, String) {
+        (
+            key.to_string(),
+            String::from_utf8_lossy(body.inner()).to_string(),
+        )
     }
     let map = Atom::from(&data)
         .object_iter()
@@ -146,5 +149,5 @@ fn test_other_type() {
     ]"#;
     let atom = Atom::from(data);
     let mut iter = atom.object_iter();
-    assert_eq!(iter.next(), None);
+    assert!(iter.next().is_none());
 }
